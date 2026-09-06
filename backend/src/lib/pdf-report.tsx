@@ -5,18 +5,11 @@ import {
   Text,
   View,
   StyleSheet,
-  Font,
   renderToBuffer,
 } from "@react-pdf/renderer";
 import { Incident } from "@prisma/client";
 
-Font.register({
-  family: "Helvetica",
-  fonts: [
-    { src: "Helvetica" },
-    { src: "Helvetica-Bold", fontWeight: "bold" },
-  ],
-});
+// Note: Standard fonts (Helvetica, Courier, Times-Roman) do NOT need Font.register.
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: "Helvetica", fontSize: 11, color: "#333" },
@@ -64,7 +57,7 @@ const IncidentReport = ({ incident }: { incident: Incident }) => {
             <Text style={styles.subtitle}>{incident.id}</Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
-            <Text>Status: {incident.status.toUpperCase()}</Text>
+            <Text>Status: {(incident.status || "").toUpperCase()}</Text>
             <Text>Generated: {new Date().toISOString().split("T")[0]}</Text>
           </View>
         </View>
@@ -75,16 +68,17 @@ const IncidentReport = ({ incident }: { incident: Incident }) => {
             <>
               <View style={styles.row}>
                 <Text style={styles.label}>Scene ID:</Text>
-                <Text style={styles.value}>{obs.scene_id}</Text>
+                <Text style={styles.value}>{obs.scene_id || "N/A"}</Text>
               </View>
               <View style={styles.row}>
                 <Text style={styles.label}>Observation Time:</Text>
-                <Text style={styles.value}>{obs.observation_time}</Text>
+                <Text style={styles.value}>{obs.observation_time || "N/A"}</Text>
               </View>
               <View style={styles.row}>
                 <Text style={styles.label}>Location:</Text>
                 <Text style={styles.value}>
-                  {obs.latitude?.toFixed(4)}, {obs.longitude?.toFixed(4)}
+                  {obs.latitude != null ? obs.latitude.toFixed(4) : "N/A"},{" "}
+                  {obs.longitude != null ? obs.longitude.toFixed(4) : "N/A"}
                 </Text>
               </View>
             </>
@@ -100,9 +94,9 @@ const IncidentReport = ({ incident }: { incident: Incident }) => {
               <View style={styles.row}>
                 <Text style={styles.label}>Predicted Age:</Text>
                 <Text style={styles.value}>
-                  {s1.age_prediction?.predicted_age_hours} hours (
-                  {s1.age_prediction?.age_interval_lower_hours}-
-                  {s1.age_prediction?.age_interval_upper_hours})
+                  {s1.age_prediction?.predicted_age_hours ?? "N/A"} hours (
+                  {s1.age_prediction?.age_interval_lower_hours ?? "N/A"}-
+                  {s1.age_prediction?.age_interval_upper_hours ?? "N/A"})
                 </Text>
               </View>
               <View style={styles.row}>
@@ -123,7 +117,7 @@ const IncidentReport = ({ incident }: { incident: Incident }) => {
             <>
               <View style={styles.row}>
                 <Text style={styles.label}>Particle Count:</Text>
-                <Text style={styles.value}>{s2.particle_count}</Text>
+                <Text style={styles.value}>{s2.particle_count ?? "N/A"}</Text>
               </View>
               <View style={styles.row}>
                 <Text style={styles.label}>Forcing Provider:</Text>
@@ -148,20 +142,22 @@ const IncidentReport = ({ incident }: { incident: Incident }) => {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>4. System 3: Vessel Attribution</Text>
-          {s3 && s3.candidates ? (
+          {s3 && Array.isArray(s3.candidates) && s3.candidates.length > 0 ? (
             s3.candidates.map((vessel: any, idx: number) => (
               <View key={idx} style={styles.candidateBlock}>
                 <Text style={{ fontWeight: "bold" }}>
-                  #{vessel.rank} - {vessel.name || "Unknown Vessel"} (MMSI:{" "}
-                  {vessel.mmsi})
+                  #{vessel.rank ?? idx + 1} - {vessel.name || "Unknown Vessel"} (MMSI:{" "}
+                  {vessel.mmsi || "N/A"})
                 </Text>
                 <View style={styles.row}>
                   <Text style={styles.label}>Compatibility Score:</Text>
                   <Text style={styles.value}>
-                    {(vessel.compatibility_score * 100).toFixed(1)}%
+                    {vessel.compatibility_score != null
+                      ? `${(vessel.compatibility_score * 100).toFixed(1)}%`
+                      : "N/A"}
                   </Text>
                 </View>
-                {vessel.evidence_for && (
+                {Array.isArray(vessel.evidence_for) && vessel.evidence_for.length > 0 && (
                   <View style={styles.row}>
                     <Text style={styles.label}>Evidence For:</Text>
                     <Text style={styles.value}>
@@ -186,7 +182,7 @@ const IncidentReport = ({ incident }: { incident: Incident }) => {
   );
 };
 
-export async function generateIncidentPDF(incident: Incident): Promise<Uint8Array> {
+export async function generateIncidentPDF(incident: Incident): Promise<Buffer> {
   const pdfBuffer = await renderToBuffer(<IncidentReport incident={incident} /> as any);
-  return new Uint8Array(pdfBuffer);
+  return Buffer.from(pdfBuffer);
 }
