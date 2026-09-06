@@ -1,0 +1,23 @@
+{
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
+    },
+    "src/app/api/v1/pipeline/stream/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/v1/incidents/[id]/geojson/route.ts": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, X-API-Key, Authorization" }
+      ]
+    }
+  ]
+}
