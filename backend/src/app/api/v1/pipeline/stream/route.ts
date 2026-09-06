@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { subscribeIncidentUpdates, subscribeAllIncidentUpdates } from "@/lib/events";
@@ -42,7 +44,7 @@ export async function GET(request: NextRequest) {
 
   request.signal.addEventListener("abort", () => {
     if (unsubscribe) unsubscribe();
-    writer.close();
+    writer.close().catch(() => {});
   });
 
   return new Response(responseStream.readable, {
