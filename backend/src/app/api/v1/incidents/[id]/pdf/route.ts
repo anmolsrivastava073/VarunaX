@@ -21,7 +21,8 @@ export async function GET(
 
     const pdfBuffer = await generateIncidentPDF(incident);
 
-    return new Response(pdfBuffer, {
+    // Cast the Buffer to 'any' to bypass the DOM vs Node.js typing conflict for BodyInit
+    return new Response(pdfBuffer as any, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
