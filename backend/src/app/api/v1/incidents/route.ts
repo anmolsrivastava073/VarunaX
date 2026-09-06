@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       data: {
         id,
         status: IncidentStatus.system1_pending,
-        observation: body,
+        observation: validated.data as any,
       },
     });
 
