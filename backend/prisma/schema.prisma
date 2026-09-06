@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum IncidentStatus {
+  system1_pending
+  system2_pending
+  system3_pending
+  completed
+  unresolved
+}
+
+model Incident {
+  id        String         @id // INCIDENT_YYYY_NNN format
+  status    IncidentStatus @default(system1_pending)
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  /// Basic observation info (scene_id, lat, lon, crs, time)
+  observation Json? @db.JsonB
+
+  /// System 1: Detection output
+  system1 Json? @db.JsonB
+
+  /// System 2: Drift analysis output
+  system2 Json? @db.JsonB
+
+  /// System 3: AIS vessel attribution output
+  system3 Json? @db.JsonB
+
+  @@map("incidents")
+}
