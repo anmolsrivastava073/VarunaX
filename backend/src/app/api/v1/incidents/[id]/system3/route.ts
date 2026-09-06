@@ -7,13 +7,13 @@ import { IncidentStatus } from "@prisma/client";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const authError = validateApiKey(request);
     if (authError) return authError;
 
-    const { id } = await params;
+    const { id } = params;
     const body = await request.json();
     const validated = System3OutputSchema.safeParse(body);
 
