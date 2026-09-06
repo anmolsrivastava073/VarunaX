@@ -14,6 +14,7 @@ export async function GET() {
       incidentDetail: "GET /api/v1/incidents/:id",
       incidentResults: "GET /api/v1/incidents/:id/results",
       incidentGeojson: "GET /api/v1/incidents/:id/geojson",
+      incidentPdf: "GET /api/v1/incidents/:id/pdf",
       stream: "GET /api/v1/pipeline/stream?incidentId=:id",
       internal: {
         create: "POST /api/v1/incidents",
