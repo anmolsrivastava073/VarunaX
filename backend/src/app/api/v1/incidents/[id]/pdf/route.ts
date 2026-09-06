@@ -18,8 +18,8 @@ export async function GET(
 
     const pdfBuffer = await generateIncidentPDF(incident);
 
-    // Use the standard web Response object for binary streams to satisfy TypeScript
-    return new Response(pdfBuffer, {
+    // Explicitly cast to bypass the TypeScript DOM generic mismatch for BodyInit
+    return new Response(pdfBuffer as unknown as BodyInit, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
