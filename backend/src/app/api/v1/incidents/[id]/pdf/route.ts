@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateIncidentPDF } from "@/lib/pdf-report";
@@ -18,12 +21,12 @@ export async function GET(
 
     const pdfBuffer = await generateIncidentPDF(incident);
 
-    // Explicitly cast to bypass the TypeScript DOM generic mismatch for BodyInit
-    return new Response(pdfBuffer as unknown as BodyInit, {
+    return new Response(pdfBuffer, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${id}_dossier.pdf"`,
+        "Cache-Control": "no-store, max-age=0",
       },
     });
   } catch (error) {
