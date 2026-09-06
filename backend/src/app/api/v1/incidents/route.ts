@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { CreateIncidentSchema } from "@/lib/validation";
+import { CreateIncidentSchema, IncidentListQuerySchema } from "@/lib/validation";
 import { validateApiKey } from "@/lib/auth";
 import { emitIncidentUpdate } from "@/lib/events";
 import { generateIncidentId } from "@/lib/incident-id";
@@ -9,11 +9,16 @@ import { IncidentStatus } from "@prisma/client";
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const search = searchParams.get("search") || "";
-    const status = searchParams.get("status") || "";
+    const queryObj = Object.fromEntries(searchParams.entries());
+    
+    // Safely parse query parameters with Zod instead of manual parseInt
+    const validated = IncidentListQuerySchema.safeParse(queryObj);
+    
+    if (!validated.success) {
+      return NextResponse.json({ error: "Invalid query parameters", details: validated.error.errors }, { status: 400 });
+    }
 
+    const { page, limit, search, status } = validated.data;
     const skip = (page - 1) * limit;
 
     const where: any = {};
