@@ -1,6 +1,12 @@
 import { EventEmitter } from "events";
 
-const bus = new EventEmitter();
+const globalForEvents = globalThis as unknown as { bus: EventEmitter };
+const bus = globalForEvents.bus || new EventEmitter();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForEvents.bus = bus;
+}
+
 bus.setMaxListeners(100);
 
 export interface IncidentEvent {
