@@ -1,5 +1,4 @@
 import { MOCK_INCIDENTS } from "./mock-data";
-import { generateIncidentId } from "../src/lib/incident-id";
 
 const API_KEY = "dev-secret-key-change-me";
 const BASE_URL = "http://localhost:3000/api/v1";
