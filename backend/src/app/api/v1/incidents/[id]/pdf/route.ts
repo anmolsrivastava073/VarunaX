@@ -18,7 +18,8 @@ export async function GET(
 
     const pdfBuffer = await generateIncidentPDF(incident);
 
-    return new NextResponse(pdfBuffer, {
+    // Use the standard web Response object for binary streams to satisfy TypeScript
+    return new Response(pdfBuffer, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
