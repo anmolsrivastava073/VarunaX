@@ -385,6 +385,9 @@ export default function LivePipelineView({ caseRecord: initialCase }: LivePipeli
               stage={currentStage}
               interactiveMode="liveSimulation"
               height="500px"
+              loadingStage={isStageLoading ? currentStage : null}
+              loadingDurationMs={1300 / playbackSpeed}
+              onProcessingComplete={() => setIsStageLoading(false)}
             />
           </div>
 
@@ -431,17 +434,8 @@ export default function LivePipelineView({ caseRecord: initialCase }: LivePipeli
                 </span>
               </div>
 
-              {/* ── CINEMATIC LOADING STATE FOR CURRENT SYSTEM ── */}
-              {isStageLoading && (
-                <SystemProcessingLoader
-                  stage={currentStage}
-                  durationMs={1300 / playbackSpeed}
-                  onComplete={() => setIsStageLoading(false)}
-                />
-              )}
-
               {/* ── SYSTEM 1 RESOLVED OUTPUT ── */}
-              {!isStageLoading && currentStageIndex === 0 && (
+              {currentStageIndex === 0 && (
                 <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
                   {/* PALSAR Image Animation Card */}
                   <div className="bg-white rounded-3xl border border-[#7ee0cf]/60 p-4 shadow-sm">
@@ -488,7 +482,7 @@ export default function LivePipelineView({ caseRecord: initialCase }: LivePipeli
               )}
 
               {/* ── SYSTEM 2 RESOLVED OUTPUT ── */}
-              {!isStageLoading && currentStageIndex === 1 && (
+              {currentStageIndex === 1 && (
                 <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
                   {/* PALSAR Red Overlay Visual */}
                   <div className="bg-white rounded-3xl border border-[#7ee0cf]/60 p-4 shadow-sm">
@@ -535,7 +529,7 @@ export default function LivePipelineView({ caseRecord: initialCase }: LivePipeli
               )}
 
               {/* ── SYSTEM 3 RESOLVED OUTPUT ── */}
-              {!isStageLoading && currentStageIndex === 2 && (
+              {currentStageIndex === 2 && (
                 <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
                   <VesselRankingCard
                     data={activeCase.system3}
@@ -555,7 +549,7 @@ export default function LivePipelineView({ caseRecord: initialCase }: LivePipeli
               )}
 
               {/* ── COMPILATION / FINAL SUMMARY CASE DASHBOARD ── */}
-              {!isStageLoading && currentStageIndex === 3 && (
+              {currentStageIndex === 3 && (
                 <CaseSummaryDashboard
                   caseRecord={activeCase}
                   onRestart={handleRestart}

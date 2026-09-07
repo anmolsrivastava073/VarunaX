@@ -5,6 +5,7 @@ import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { CaseRecord, PipelineStage } from "@/types/maritime";
 import { Satellite, ZoomIn, ZoomOut } from "lucide-react";
+import SystemProcessingLoader from "@/components/live/SystemProcessingLoader";
 
 /* ─────────────────────────────────────────────
    BASEMAP CONFIGS (100% Free, No Watermark, No API Key, Clean Labels, No Emojis)
@@ -161,6 +162,9 @@ interface MapLibreMapProps {
   onSelectCase?: (caseId: string) => void;
   height?: string;
   showLayerControls?: boolean;
+  loadingStage?: PipelineStage | "completed" | null;
+  loadingDurationMs?: number;
+  onProcessingComplete?: () => void;
 }
 
 /* ─────────────────────────────────────────────
@@ -173,6 +177,9 @@ export default function MapLibreMap({
   interactiveMode = "singleCase",
   onSelectCase,
   height = "520px",
+  loadingStage = null,
+  loadingDurationMs = 1200,
+  onProcessingComplete,
 }: MapLibreMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -1152,6 +1159,19 @@ export default function MapLibreMap({
           </span>
         )}
       </div>
+
+      {/* ── CENTERED SYSTEM PROCESSING LOADER (Over Map with Polygons/Satellite visible) ── */}
+      {loadingStage && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center p-4 bg-slate-950/20 backdrop-blur-[1.5px] pointer-events-none transition-all">
+          <div className="pointer-events-auto max-w-sm sm:max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <SystemProcessingLoader
+              stage={loadingStage}
+              durationMs={loadingDurationMs}
+              onComplete={onProcessingComplete}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

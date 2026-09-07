@@ -184,6 +184,9 @@ export default function PipelineDemoSection() {
                 caseData={selectedCase}
                 stage={activeStage}
                 height="500px"
+                loadingStage={isDemoLoading && activeStage !== "idle" ? activeStage : null}
+                loadingDurationMs={850}
+                onProcessingComplete={() => setIsDemoLoading(false)}
               />
               {/* Region Bar */}
               <div className="mt-3 px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 bg-white rounded-xl border border-[#B7D4E6]/50">
@@ -199,19 +202,10 @@ export default function PipelineDemoSection() {
             </div>
           </div>
 
-          {/* Right Column: Stage Inspection Cards / Loading Effect / Case Summary Dashboard */}
+          {/* Right Column: Stage Inspection Cards / Case Summary Dashboard */}
           <div className="lg:col-span-5 flex flex-col justify-between">
-            {/* ── SYSTEM LOADING STATE: EMPHASIS ON ACTIVE SYSTEM PROCESSING ── */}
-            {isDemoLoading && activeStage !== "idle" && (
-              <SystemProcessingLoader
-                stage={activeStage}
-                durationMs={850}
-                onComplete={() => setIsDemoLoading(false)}
-              />
-            )}
-
             {/* ── REGIONAL OVERVIEW (ZOOMED OUT) ── */}
-            {!isDemoLoading && activeStage === "idle" && (
+            {activeStage === "idle" && (
               <div className="p-6 rounded-3xl bg-[#f5f9fb] border border-[#0D2B45]/30 space-y-4 h-full flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -270,7 +264,7 @@ export default function PipelineDemoSection() {
             )}
 
             {/* ── SYSTEM 1: SAR SEGMENTATION ── */}
-            {!isDemoLoading && activeStage === "system1_detection" && (
+            {activeStage === "system1_detection" && (
               <div className="p-6 rounded-3xl bg-[#f5f9fb] border border-[#007ceb]/50 space-y-4 h-full flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -345,7 +339,7 @@ export default function PipelineDemoSection() {
             )}
 
             {/* ── SYSTEM 2: BACKWARD DRIFT HINDCAST ── */}
-            {!isDemoLoading && activeStage === "system2_drift" && (
+            {activeStage === "system2_drift" && (
               <div className="p-6 rounded-3xl bg-[#f5f9fb] border border-[#00bcd4]/50 space-y-4 h-full flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -422,7 +416,7 @@ export default function PipelineDemoSection() {
             )}
 
             {/* ── SYSTEM 3: AIS ATTRIBUTION ── */}
-            {!isDemoLoading && activeStage === "system3_attribution" && (
+            {activeStage === "system3_attribution" && (
               <div className="p-6 rounded-3xl bg-[#f5f9fb] border border-[#81ac19]/50 space-y-4 h-full flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -511,7 +505,7 @@ export default function PipelineDemoSection() {
             )}
 
             {/* ── STAGE 4: FINAL COMPILATION / SUMMARY CASE DASHBOARD ── */}
-            {!isDemoLoading && activeStage === "completed" && (
+            {activeStage === "completed" && (
               <CaseSummaryDashboard
                 caseRecord={selectedCase}
                 onRestart={() => handleStageChange("idle")}

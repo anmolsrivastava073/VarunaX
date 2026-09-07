@@ -33,68 +33,64 @@ const STAGE_METADATA: Record<
 > = {
   system1_detection: {
     name: "System 1: SAR Slick Detection",
-    stageNum: "Stage 1 of 4",
+    stageNum: "Stage 1",
     subtitle: "Sentinel-1 C-SAR Dual-Pol Ingestion & Neural Segmentation",
-    accentColor: "#007ceb",
+    accentColor: "#00bcd4",
     icon: Satellite,
-    tag: "ESA Sentinel-1 C-SAR",
+    tag: "ESA Sentinel-1",
     steps: [
-      "Ingesting Level-1 GRDH IW dual-polarization (VV+VH) radar scene...",
-      "Calibrating backscatter cross-section & reflectance damping ratio...",
-      "Executing neural texture entropy classifier for biogenic look-alike rejection...",
-      "Extracting polygon boundary contour & oil thickness gradient...",
+      "Calibrating dual-polarization (VV+VH) backscatter damping ratio...",
+      "Running texture entropy CNN classifier for look-alike rejection...",
+      "Tracing multi-node polygon boundary contour & centroid...",
     ],
   },
   system2_drift: {
     name: "System 2: Backward Drift Hindcast",
-    stageNum: "Stage 2 of 4",
-    subtitle: "Lagrangian Particle Backtracking with CMEMS GLORYS12 & ERA5",
-    accentColor: "#00bcd4",
+    stageNum: "Stage 2",
+    subtitle: "Lagrangian Particle Backtracking (GLORYS12 + ERA5 CDS)",
+    accentColor: "#7ee0cf",
     icon: Compass,
-    tag: "CMEMS GLORYS12 + ERA5 CDS",
+    tag: "CMEMS + ERA5 CDS",
     steps: [
-      "Fetching 1/12° oceanic current velocity vectors from CMEMS GLORYS12...",
-      "Ingesting hourly 10m atmospheric wind fields from ECMWF ERA5 / CDS...",
-      "Executing backward 4D Lagrangian hydrodynamic advection simulation...",
-      "Calculating origin probability ellipse & spatiotemporal uncertainty window...",
+      "Fetching 1/12° oceanic surface current vectors from CMEMS...",
+      "Ingesting hourly 10m atmospheric wind fields from ERA5 CDS...",
+      "Executing 4D backward Lagrangian trajectory advection...",
     ],
   },
   system3_attribution: {
-    name: "System 3: AIS Dark Target Attribution",
-    stageNum: "Stage 3 of 4",
-    subtitle: "Historical Transponder Interrogation & Vessel Forensic Scoring",
-    accentColor: "#81ac19",
+    name: "System 3: AIS Target Attribution",
+    stageNum: "Stage 3",
+    subtitle: "Historical Transponder Interrogation & Dark Gap Screening",
+    accentColor: "#a3d328",
     icon: Anchor,
-    tag: "Terrestrial + Satellite AIS",
+    tag: "AccessAIS",
     steps: [
       "Filtering candidate maritime traffic within origin radius...",
-      "Screening vessels for transponder dark gap outages & AIS manipulation...",
-      "Computing Bayesian trajectory co-location intersection probabilities...",
-      "Ranking suspect vessels by multi-factor forensic attribution score...",
+      "Screening vessels for transponder dark gap blackout outages...",
+      "Ranking suspect vessels by multi-factor forensic attribution...",
     ],
   },
   completed: {
-    name: "Compilation: Executive Summary Dashboard",
-    stageNum: "Final Compilation",
-    subtitle: "Synthesizing Multi-System Evidence Chain of Custody",
-    accentColor: "#0D2B45",
+    name: "Compilation: Case Summary Dashboard",
+    stageNum: "Compilation",
+    subtitle: "Synthesizing Multi-System Chain of Custody",
+    accentColor: "#7ee0cf",
     icon: ShieldCheck,
     tag: "IMO / Coast Guard Ready",
     steps: [
-      "Correlating Sentinel-1 SAR detection with CMEMS hydrodynamic origin...",
-      "Binding primary suspect AIS track to reconstructed spill window...",
-      "Generating MARPOL Annex I illegal discharge violation dossier...",
-      "Compiling Executive Case Summary Dashboard...",
+      "Binding Sentinel-1 SAR footprint to hydrodynamic origin...",
+      "Correlating suspect vessel track with reconstructed spill time...",
+      "Compiling Executive Forensic Summary Case Dashboard...",
     ],
   },
 };
 
 export default function SystemProcessingLoader({
   stage,
-  durationMs = 1500,
+  durationMs = 1200,
   onComplete,
 }: SystemProcessingLoaderProps) {
-  const [progress, setProgress] = useState(10);
+  const [progress, setProgress] = useState(12);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
 
   const meta = STAGE_METADATA[stage] || STAGE_METADATA.system1_detection;
@@ -116,85 +112,85 @@ export default function SystemProcessingLoader({
       if (elapsed >= durationMs) {
         clearInterval(interval);
         if (onComplete) {
-          setTimeout(onComplete, 150);
+          setTimeout(onComplete, 120);
         }
       }
-    }, 40);
+    }, 35);
 
     return () => clearInterval(interval);
   }, [stage, durationMs, onComplete, meta.steps.length]);
 
   return (
-    <div className="bg-white rounded-3xl border border-[#7ee0cf]/60 p-6 shadow-sm space-y-6 animate-in fade-in zoom-in-95 duration-200">
+    <div className="bg-[#0D2B45]/94 backdrop-blur-md text-white rounded-3xl border border-[#7ee0cf]/60 p-5 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200">
       {/* Top Banner */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div className="flex items-center justify-between border-b border-[#1E5A6E] pb-2.5">
         <div className="flex items-center gap-2">
           <span
             className="w-2.5 h-2.5 rounded-full animate-ping inline-block"
             style={{ backgroundColor: meta.accentColor }}
           />
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
             {meta.stageNum}
           </span>
-          <span className="text-slate-300">•</span>
+          <span className="text-slate-500">•</span>
           <span
-            className="text-xs font-semibold px-2 py-0.5 rounded-full border"
+            className="text-[11px] font-semibold px-2 py-0.5 rounded-full border"
             style={{
-              borderColor: `${meta.accentColor}40`,
-              backgroundColor: `${meta.accentColor}12`,
+              borderColor: `${meta.accentColor}50`,
+              backgroundColor: `${meta.accentColor}20`,
               color: meta.accentColor,
             }}
           >
-            Processing Live Telemetry
+            Processing Telemetry
           </span>
         </div>
-        <span className="text-[10px] font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded-lg border border-slate-200">
+        <span className="text-[10px] font-mono text-[#7ee0cf] bg-[#103859] px-2 py-0.5 rounded border border-[#1E5A6E]">
           {meta.tag}
         </span>
       </div>
 
-      {/* Radar Scanner Visual & Status */}
-      <div className="flex flex-col items-center justify-center py-6 space-y-4">
-        <div className="relative w-24 h-24 flex items-center justify-center">
-          {/* Outer Pulsing Rings */}
+      {/* Radar Scanner Visual */}
+      <div className="flex items-center gap-4 py-1">
+        <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
           <div
             className="absolute inset-0 rounded-full animate-ping opacity-25"
             style={{ backgroundColor: meta.accentColor }}
           />
           <div
-            className="absolute inset-2 rounded-full border border-dashed animate-spin opacity-40"
+            className="absolute inset-1 rounded-full border border-dashed animate-spin opacity-40"
             style={{
               borderColor: meta.accentColor,
-              animationDuration: "6s",
+              animationDuration: "5s",
             }}
           />
-          {/* Inner Circle with Icon */}
           <div
-            className="relative w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg text-white"
+            className="relative w-10 h-10 rounded-xl flex items-center justify-center shadow-lg text-white"
             style={{ backgroundColor: meta.accentColor }}
           >
-            <Icon className="w-7 h-7 animate-pulse" />
+            <Icon className="w-5 h-5 animate-pulse text-[#0D2B45]" />
           </div>
         </div>
 
-        <div className="text-center space-y-1">
-          <h3 className="text-base font-extrabold text-slate-900">{meta.name}</h3>
-          <p className="text-xs text-slate-500 max-w-sm">{meta.subtitle}</p>
+        <div className="space-y-0.5 flex-1 min-w-0">
+          <h3 className="text-sm font-extrabold text-white truncate">{meta.name}</h3>
+          <p className="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">
+            {meta.subtitle}
+          </p>
         </div>
       </div>
 
       {/* Progress Bar & Percentage */}
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         <div className="flex justify-between text-xs font-semibold">
-          <span className="text-slate-700 flex items-center gap-1.5">
-            <Cpu className="w-3.5 h-3.5 text-slate-500" />
-            System Computing Workload
+          <span className="text-slate-300 flex items-center gap-1.5 text-[11px]">
+            <Cpu className="w-3 h-3 text-[#7ee0cf]" />
+            Live Computing Stream
           </span>
-          <span className="font-mono text-sm" style={{ color: meta.accentColor }}>
+          <span className="font-mono text-xs font-bold" style={{ color: meta.accentColor }}>
             {progress}%
           </span>
         </div>
-        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
+        <div className="w-full h-2 bg-[#103859] rounded-full overflow-hidden p-0.5 border border-[#1E5A6E]">
           <div
             className="h-full rounded-full transition-all duration-75"
             style={{
@@ -205,13 +201,13 @@ export default function SystemProcessingLoader({
         </div>
       </div>
 
-      {/* Sub-steps checklist */}
-      <div className="space-y-2 bg-[#f5f9fb] p-3.5 rounded-2xl border border-[#B7D4E6]/50">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-          <Activity className="w-3.5 h-3.5 text-[#007ceb]" />
-          <span>Pipeline Telemetry Operations</span>
+      {/* Checklist of operations */}
+      <div className="space-y-1.5 bg-[#103859]/80 p-2.5 rounded-xl border border-[#1E5A6E]">
+        <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#7ee0cf] uppercase tracking-wider mb-1">
+          <Activity className="w-3 h-3 text-[#00bcd4]" />
+          <span>Active Pipeline Operations</span>
         </div>
-        <div className="space-y-1.5 text-xs">
+        <div className="space-y-1 text-xs">
           {meta.steps.map((st, i) => {
             const isDone = i < activeStepIndex;
             const isCurrent = i === activeStepIndex;
@@ -220,23 +216,23 @@ export default function SystemProcessingLoader({
                 key={i}
                 className={`flex items-start gap-2 transition-opacity ${
                   isCurrent
-                    ? "font-semibold text-slate-900 opacity-100"
+                    ? "font-semibold text-white opacity-100"
                     : isDone
-                    ? "text-slate-500 opacity-80"
-                    : "text-slate-400 opacity-40"
+                    ? "text-slate-400 opacity-80"
+                    : "text-slate-500 opacity-40"
                 }`}
               >
                 {isDone ? (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400 mt-0.5 shrink-0" />
                 ) : isCurrent ? (
                   <Loader2
-                    className="w-3.5 h-3.5 animate-spin mt-0.5 shrink-0"
+                    className="w-3 h-3 animate-spin mt-0.5 shrink-0"
                     style={{ color: meta.accentColor }}
                   />
                 ) : (
-                  <div className="w-3.5 h-3.5 rounded-full border border-slate-300 mt-0.5 shrink-0" />
+                  <div className="w-3 h-3 rounded-full border border-slate-600 mt-0.5 shrink-0" />
                 )}
-                <span className="text-[11px] leading-tight">{st}</span>
+                <span className="text-[10px] leading-tight">{st}</span>
               </div>
             );
           })}
