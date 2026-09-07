@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🌊 VarunaX — The Sea Sentinel
+<img src="frontend/public/VarunaX_logo.png" width="280" alt="VarunaX logo"/>
+
+# VarunaX — The Sea Sentinel
 
 **Autonomous Satellite Oil Spill Detection & AIS Vessel Attribution**
 
