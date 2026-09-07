@@ -6,7 +6,7 @@ import { CaseRecord } from "@/types/maritime";
 import MetricCard from "./MetricCard";
 import FilterBar from "./FilterBar";
 import CaseRow from "./CaseRow";
-import MapLibreMap from "@/components/map/MapLibreMap";
+import dynamic from "next/dynamic";
 import {
   Satellite,
   Anchor,
@@ -20,6 +20,8 @@ import {
 interface DashboardClientProps {
   initialCases: CaseRecord[];
 }
+
+const LeafletMap = dynamic(() => import("@/components/map/LeafletMap"), { ssr: false });
 
 export default function DashboardClient({ initialCases }: DashboardClientProps) {
   const router = useRouter();
@@ -137,7 +139,7 @@ export default function DashboardClient({ initialCases }: DashboardClientProps) 
         </div>
 
         <div className="bg-white p-2 rounded-3xl border border-[#7ee0cf]/60 shadow-sm">
-          <MapLibreMap
+          <LeafletMap
             cases={filteredCases}
             interactiveMode="overview"
             height="380px"

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { CaseRecord } from "@/types/maritime";
-import MapLibreMap from "@/components/map/MapLibreMap";
+import dynamic from "next/dynamic";
 import AttributionRadar from "./AttributionRadar";
 import AISTrackTable from "./AISTrackTable";
 import { formatDateTime, getSeverityBadgeClass, getStatusBadgeClass } from "@/lib/utils";
@@ -22,7 +22,7 @@ import {
 interface CaseDossierViewProps {
   caseData: CaseRecord;
 }
-
+const LeafletMap = dynamic(() => import("@/components/map/LeafletMap"), { ssr: false });
 export default function CaseDossierView({ caseData }: CaseDossierViewProps) {
   const [showReportModal, setShowReportModal] = useState(false);
   const primarySuspect = caseData.system3.primarySuspect;
@@ -91,7 +91,7 @@ export default function CaseDossierView({ caseData }: CaseDossierViewProps) {
         </div>
 
         <div className="bg-white p-2 rounded-3xl border border-[#7ee0cf]/60 shadow-sm">
-          <MapLibreMap caseData={caseData} stage="completed" height="520px" />
+          <LeafletMap caseData={caseData} stage="completed" height="520px" />
         </div>
       </div>
 

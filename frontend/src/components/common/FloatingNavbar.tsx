@@ -35,7 +35,7 @@ export default function FloatingNavbar() {
           </div>
           <div className="flex flex-col">
             <span className="font-bold text-sm tracking-tight text-[#0D2B45] flex items-center gap-1.5">
-              OceanSentinel
+              VarunaX
             </span>
           </div>
         </Link>

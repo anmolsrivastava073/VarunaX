@@ -13,7 +13,7 @@ export default function Footer() {
             <div className="w-10 h-10 rounded-full bg-[#1E5A6E] flex items-center justify-center text-[#6BA7A0] group-hover:bg-[#6BA7A0] group-hover:text-[#0D2B45] transition-colors duration-300">
               <Waves className="w-5 h-5" />
             </div>
-            <span className="font-bold text-2xl text-white tracking-tight">OceanSentinel</span>
+            <span className="font-bold text-2xl text-white tracking-tight">VarunaX</span>
           </Link>
           <p className="text-sm leading-relaxed text-[#B7D4E6]/80 font-light">
             Defending marine ecosystems through satellite radar, drift hindcasting, and historical AIS attribution.
@@ -63,7 +63,7 @@ export default function Footer() {
 
       {/* Subtle Copyright Bar */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#B7D4E6]/50">
-        <p>© {new Date().getFullYear()} OceanSentinel Maritime Intelligence.</p>
+        <p>© {new Date().getFullYear()} VarunaX Maritime Intelligence.</p>
         <p>Open GIS & Copernicus Sentinel-1 Aligned.</p>
       </div>
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { MOCK_CASES } from "@/data/mockCases";
 import { CaseRecord } from "@/types/maritime";
-import MapLibreMap from "@/components/map/MapLibreMap";
+import dynamic from "next/dynamic";
 import DemoSlickForm from "@/components/common/DemoSlickForm";
 import SystemProcessingLoader from "@/components/live/SystemProcessingLoader";
 import CaseSummaryDashboard from "@/components/live/CaseSummaryDashboard";
@@ -21,6 +21,7 @@ import {
   Sliders,
   Play,
 } from "lucide-react";
+const LeafletMap = dynamic(() => import("@/components/map/LeafletMap"), { ssr: false });
 
 export default function PipelineDemoSection() {
   const [activeStage, setActiveStage] = useState<
@@ -180,7 +181,7 @@ export default function PipelineDemoSection() {
           {/* Left Column: MapLibre Map */}
           <div className="lg:col-span-7 flex flex-col justify-between space-y-3">
             <div className="bg-[#f5f9fb] p-2 rounded-3xl border border-[#B7D4E6]/60 shadow-sm flex-1">
-              <MapLibreMap
+              <LeafletMap
                 caseData={selectedCase}
                 stage={activeStage}
                 height="500px"
