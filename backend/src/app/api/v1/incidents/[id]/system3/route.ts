@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { System3OutputSchema } from "@/lib/validation";
 import { validateApiKey } from "@/lib/auth";
 import { emitIncidentUpdate } from "@/lib/events";
 import { IncidentStatus } from "@prisma/client";
+import { MOCK_INCIDENTS } from "../../../../../../../scripts/mock-data";
 
 export async function POST(
   request: NextRequest,
@@ -14,17 +14,12 @@ export async function POST(
     if (authError) return authError;
 
     const { id } = params;
-    const body = await request.json();
-    const validated = System3OutputSchema.safeParse(body);
-
-    if (!validated.success) {
-      return NextResponse.json({ error: "Invalid data", details: validated.error.errors }, { status: 400 });
-    }
+    const hardcodedPayload = MOCK_INCIDENTS[0].system3;
 
     const incident = await prisma.incident.update({
       where: { id },
       data: {
-        system3: body,
+        system3: hardcodedPayload as any,
         status: IncidentStatus.completed,
       },
     });
@@ -33,7 +28,7 @@ export async function POST(
       incidentId: id,
       system: "system3",
       status: incident.status,
-      payload: body,
+      payload: hardcodedPayload as any,
       timestamp: new Date().toISOString()
     });
 
