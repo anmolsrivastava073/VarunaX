@@ -87,7 +87,7 @@ export default function VesselRankingCard({
                   AIS Transponder Gap Penalty ({primarySuspect.evidence.aisContinuity}%)
                 </span>
                 <span className="font-bold text-[#007ceb]">
-                  {primarySuspect.hasDarkPeriod ? `⚠️ ${primarySuspect.darkPeriodDurationHours}h Gap` : "Continuous"}
+                  {primarySuspect.hasDarkPeriod ? `${primarySuspect.darkPeriodDurationHours}h Gap` : "Continuous"}
                 </span>
               </div>
               <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">

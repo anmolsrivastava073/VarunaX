@@ -173,7 +173,7 @@ export default function CaseDossierView({ caseData }: CaseDossierViewProps) {
             <div className="flex justify-between py-1 border-b border-slate-100">
               <span className="text-slate-500">Dark Gap Outage</span>
               <span className="font-bold text-[#007ceb]">
-                {primarySuspect?.hasDarkPeriod ? `⚠️ ${primarySuspect.darkPeriodDurationHours}h Gap` : "None"}
+                {primarySuspect?.hasDarkPeriod ? `${primarySuspect.darkPeriodDurationHours}h Gap` : "None"}
               </span>
             </div>
             <div className="flex justify-between py-1">
@@ -312,7 +312,7 @@ export default function CaseDossierView({ caseData }: CaseDossierViewProps) {
                 <div className="p-3 bg-white rounded-xl border border-[#7ee0cf]/60">
                   <span className="text-slate-400 block mb-0.5">AIS Transponder Status</span>
                   <span className="font-bold text-[#007ceb]">
-                    {primarySuspect?.hasDarkPeriod ? `⚠️ ${primarySuspect.darkPeriodDurationHours}h Gap at Origin` : "Continuous"}
+                    {primarySuspect?.hasDarkPeriod ? `${primarySuspect.darkPeriodDurationHours}h Gap at Origin` : "Continuous"}
                   </span>
                 </div>
                 <div className="p-3 bg-white rounded-xl border border-[#7ee0cf]/60">
