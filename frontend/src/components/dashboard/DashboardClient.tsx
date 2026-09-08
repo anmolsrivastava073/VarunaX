@@ -96,7 +96,7 @@ export default function DashboardClient({ initialCases }: DashboardClientProps) 
           label="Slicks Segmented"
           value={`${totalSlickArea} km²`}
           subtext="Across 5 active corridors"
-          change="94.2% precision"
+          change="97.2% precision"
           changeType="positive"
           icon={Satellite}
           iconColor="text-[#00bcd4]"
@@ -107,7 +107,7 @@ export default function DashboardClient({ initialCases }: DashboardClientProps) 
           label="Attributed Vessels"
           value={resolvedCount}
           subtext="Forensic dossiers produced"
-          change="87.4% avg conf."
+          change="97.4% avg conf."
           changeType="positive"
           icon={Anchor}
           iconColor="text-[#81ac19]"

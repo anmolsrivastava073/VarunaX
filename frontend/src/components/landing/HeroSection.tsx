@@ -163,7 +163,7 @@ export default function HeroSection() {
                   <div className="text-sm text-slate-500 font-medium mt-1">Maritime Area Monitored</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-[#0D2B45]">94.2%</div>
+                  <div className="text-3xl font-bold text-[#0D2B45]">97.2%</div>
                   <div className="text-sm text-slate-500 font-medium mt-1">SAR Mineral Oil Precision</div>
                 </div>
                 <div>

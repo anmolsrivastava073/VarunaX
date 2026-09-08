@@ -90,7 +90,7 @@ export const MOCK_CASES: CaseRecord[] = [
       elongation: 3.42,
       orientationDegrees: 68.5,
       sarTextureEntropy: 0.88,
-      oilLookalikeConfidence: 94.2,
+      oilLookalikeConfidence: 97.2,
       estimatedSpillAgeHours: {
         min: 18,
         max: 36,
