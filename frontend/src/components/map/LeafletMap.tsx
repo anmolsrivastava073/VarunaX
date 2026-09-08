@@ -94,6 +94,20 @@ export function generateRandomSlickPolygon(
     harmonics.push({ freq: 3, amp: 0.18, phase: rand() * Math.PI * 2 });
   }
 
+  // A finer, higher-frequency octave on top of the harmonics above —
+  // real SAR-detected sheen edges are jagged at two scales at once
+  // (a broad lobed outline, plus small ragged nicks along it), not
+  // just one smooth wobble.
+  const fineFreq = 9 + Math.floor(rand() * 5); // 9-13
+  const finePhase = rand() * Math.PI * 2;
+  const fineAmp = 0.04 + rand() * 0.05;
+
+  // Head-to-tail taper: real spills are thick near the source and thin
+  // out into a drift streak, so the silhouette should NOT be symmetric
+  // along its own elongation axis. tailBias picks which end is the
+  // thin tail (0 = fully round, up to 0.6 = a pronounced comet shape).
+  const tailBias = rand() * 0.6;
+
   const rotationOffset = rand() * Math.PI * 2;
 
   const pts: [number, number][] = [];
@@ -102,7 +116,13 @@ export function generateRandomSlickPolygon(
 
     let radiusFactor = 1;
     for (const h of harmonics) radiusFactor += h.amp * Math.cos(h.freq * angle + h.phase);
+    radiusFactor += fineAmp * Math.cos(fineFreq * angle + finePhase); // fine ragged edge
     radiusFactor += (rand() - 0.5) * 0.06; // rough, hand-drawn edge noise
+
+    // Project this vertex onto the stretch axis (before stretching) to
+    // know whether it's on the "head" or "tail" side, then taper it.
+    const along = Math.cos(angle + rotationOffset - stretchAngle); // -1 (tail) .. +1 (head)
+    radiusFactor *= 1 - tailBias * Math.max(0, -along) * 0.5;
 
     const r = baseRadiusKm * radiusFactor;
     const x = r * Math.cos(angle + rotationOffset);
@@ -124,19 +144,43 @@ export function generateRandomSlickPolygon(
 }
 
 /* ─────────────────────────────────────────────
-   Red netted / crosshatch fill.
+   Netted / crosshatch fills — one per system stage.
    Leaflet's SVG renderer writes whatever string you give
    `fillColor` straight into the path's fill="" attribute, so
-   fillColor: "url(#red-netted-slick-pattern)" works as long as
-   that pattern actually exists in the map's <svg><defs>. We
-   inject it once, right after the first polygon forces Leaflet
-   to create its SVG root.
-───────────────────────────────────────────── */
-const NET_PATTERN_ID = "red-netted-slick-pattern";
+   fillColor: "url(#some-pattern-id)" works as long as that
+   pattern actually exists in the map's <svg><defs>. We inject
+   all three once, right after the first polygon forces Leaflet
+   to create its SVG root — cheap, and avoids re-injecting per
+   case/per re-render.
 
-function ensureNettedPattern(svg: SVGSVGElement | null | undefined) {
+   system1 (detection)   → white net, on a dark backing
+   system2 (drift model)  → blue net
+   system3 (attribution) / completed → red net (unchanged from before)
+───────────────────────────────────────────── */
+const NET_PATTERNS = {
+  system1: { id: "netted-slick-system1", backing: "#0f172a", backingOpacity: "0.3", line: "#f8fafc" },
+  system2: { id: "netted-slick-system2", backing: "#0f172a", backingOpacity: "0.3", line: "#3b82f6" },
+  system3: { id: "netted-slick-system3", backing: "#7f1d1d", backingOpacity: "0.35", line: "#ef4444" },
+} as const;
+type NetKey = keyof typeof NET_PATTERNS;
+
+/** Which netted pattern a given pipeline stage should render as. */
+function patternForStage(stage: PipelineStage | "idle" | undefined): NetKey {
+  switch (stage) {
+    case "system1_detection":
+      return "system1";
+    case "system2_drift":
+      return "system2";
+    case "system3_attribution":
+    case "completed":
+    case "idle":
+    default:
+      return "system3";
+  }
+}
+
+function ensureNettedPatterns(svg: SVGSVGElement | null | undefined) {
   if (!svg) return;
-  if (svg.querySelector(`#${NET_PATTERN_ID}`)) return;
 
   const NS = "http://www.w3.org/2000/svg";
   let defs = svg.querySelector("defs");
@@ -145,28 +189,33 @@ function ensureNettedPattern(svg: SVGSVGElement | null | undefined) {
     svg.insertBefore(defs, svg.firstChild);
   }
 
-  const pattern = document.createElementNS(NS, "pattern");
-  pattern.setAttribute("id", NET_PATTERN_ID);
-  pattern.setAttribute("width", "10");
-  pattern.setAttribute("height", "10");
-  pattern.setAttribute("patternUnits", "userSpaceOnUse");
+  (Object.keys(NET_PATTERNS) as NetKey[]).forEach((key) => {
+    const def = NET_PATTERNS[key];
+    if (svg.querySelector(`#${def.id}`)) return;
 
-  const rect = document.createElementNS(NS, "rect");
-  rect.setAttribute("width", "10");
-  rect.setAttribute("height", "10");
-  rect.setAttribute("fill", "#7f1d1d");
-  rect.setAttribute("fill-opacity", "0.35");
+    const pattern = document.createElementNS(NS, "pattern");
+    pattern.setAttribute("id", def.id);
+    pattern.setAttribute("width", "10");
+    pattern.setAttribute("height", "10");
+    pattern.setAttribute("patternUnits", "userSpaceOnUse");
 
-  // Two diagonals crossing = a "net" rather than one-directional hatching
-  const netLines = document.createElementNS(NS, "path");
-  netLines.setAttribute("d", "M0,0 L10,10 M10,0 L0,10");
-  netLines.setAttribute("stroke", "#ef4444");
-  netLines.setAttribute("stroke-width", "1.4");
-  netLines.setAttribute("stroke-opacity", "0.95");
+    const rect = document.createElementNS(NS, "rect");
+    rect.setAttribute("width", "10");
+    rect.setAttribute("height", "10");
+    rect.setAttribute("fill", def.backing);
+    rect.setAttribute("fill-opacity", def.backingOpacity);
 
-  pattern.appendChild(rect);
-  pattern.appendChild(netLines);
-  defs.appendChild(pattern);
+    // Two diagonals crossing = a "net" rather than one-directional hatching
+    const netLines = document.createElementNS(NS, "path");
+    netLines.setAttribute("d", "M0,0 L10,10 M10,0 L0,10");
+    netLines.setAttribute("stroke", def.line);
+    netLines.setAttribute("stroke-width", "1.4");
+    netLines.setAttribute("stroke-opacity", "0.95");
+
+    pattern.appendChild(rect);
+    pattern.appendChild(netLines);
+    defs!.appendChild(pattern);
+  });
 }
 
 /* ─────────────────────────────────────────────
@@ -210,6 +259,9 @@ export default function LeafletMap({
   const mapRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const slickGroupRef = useRef<L.LayerGroup | null>(null);
+  const lastCameraKeyRef = useRef<string>("");
+  const lastStageRef = useRef<PipelineStage | "idle" | undefined>(undefined);
+  const pulseTimeoutRef = useRef<number | null>(null);
 
   const [mapReady, setMapReady] = useState(false);
   const [basemap, setBasemap] = useState<BasemapKey>("satellite");
@@ -270,9 +322,9 @@ export default function LeafletMap({
     tileLayerRef.current = tiles;
   }, [basemap, mapReady]);
 
-  /* ── Render every test case's slick polygon, ALWAYS in the
-        red netted pattern (no stage-based color morphing —
-        kept intentionally simple per request) ── */
+  /* ── Render every case's slick polygon in the pattern matching its
+        current system stage, and move the camera only on a genuine
+        case-set or stage change (see below) — not on every re-render ── */
   useEffect(() => {
     const map = mapRef.current;
     const group = slickGroupRef.current;
@@ -287,6 +339,13 @@ export default function LeafletMap({
 
     const allBounds: L.LatLngExpression[] = [];
 
+    // In overview mode we're showing many already-processed cases at once,
+    // so they all render in their finalized (system3/red) pattern. In
+    // singleCase/liveSimulation mode there's one case walking through the
+    // pipeline, so the pattern follows the current `stage` prop.
+    const patternKey: NetKey = interactiveMode === "overview" ? "system3" : patternForStage(stage);
+    const patternDef = NET_PATTERNS[patternKey];
+
     casesToRender.forEach((c) => {
       const existingRing =
         c.system1.slickPolygon?.geometry?.coordinates?.[0] &&
@@ -298,16 +357,17 @@ export default function LeafletMap({
       allBounds.push(...latlngs);
 
       const polygon = L.polygon(latlngs, {
-        color: "#ef4444",
+        color: patternDef.line,
         weight: 2.5,
         opacity: 0.95,
-        fillColor: `url(#${NET_PATTERN_ID})`,
+        fillColor: `url(#${patternDef.id})`,
         fillOpacity: 1,
       }).addTo(group);
 
       // Force-create Leaflet's SVG root (if this is the first vector
-      // layer) then inject the crosshatch <pattern> into its <defs>.
-      ensureNettedPattern(
+      // layer) then inject all three crosshatch <pattern>s into its
+      // <defs> (idempotent — skips any that already exist).
+      ensureNettedPatterns(
         (polygon as unknown as { _renderer?: { _container?: SVGSVGElement } })._renderer?._container
       );
 
@@ -324,7 +384,7 @@ export default function LeafletMap({
 
       L.circleMarker([c.coordinates.lat, c.coordinates.lng], {
         radius: 5,
-        color: "#ef4444",
+        color: patternDef.line,
         weight: 2,
         fillColor: "#ffffff",
         fillOpacity: 1,
@@ -341,11 +401,51 @@ export default function LeafletMap({
 
     if (allBounds.length > 0) {
       const bounds = L.latLngBounds(allBounds);
-      map.fitBounds(bounds, {
-        padding: [70, 70],
-        maxZoom: interactiveMode === "overview" ? 8 : 13,
-      });
+      const caseKey = casesToRender
+        .map((c) => c.id)
+        .sort()
+        .join(",");
+      const cameraKey = `${interactiveMode}|${caseKey}`;
+      const isNewCaseSet = cameraKey !== lastCameraKeyRef.current;
+      const isStageChangeOnly = !isNewCaseSet && interactiveMode !== "overview" && stage !== lastStageRef.current;
+
+      lastCameraKeyRef.current = cameraKey;
+      lastStageRef.current = stage;
+
+      if (pulseTimeoutRef.current !== null) {
+        window.clearTimeout(pulseTimeoutRef.current);
+        pulseTimeoutRef.current = null;
+      }
+
+      if (isStageChangeOnly) {
+        // Moving from one system's stage to the next: give it a visible
+        // "camera reacting" beat — pull back briefly, then settle back
+        // onto the same polygon — rather than silently re-fitting.
+        const pulledBackZoom = Math.max(map.getZoom() - 2, map.getMinZoom(), 2);
+        map.flyTo(map.getCenter(), pulledBackZoom, { duration: 0.35 });
+        pulseTimeoutRef.current = window.setTimeout(() => {
+          map.flyToBounds(bounds, { padding: [70, 70], maxZoom: 13, duration: 0.75 });
+          pulseTimeoutRef.current = null;
+        }, 380);
+      } else if (isNewCaseSet) {
+        // A genuinely new case (or case list) to look at — fit to it once.
+        // No pulse needed here; this is the normal "load a new thing" fit.
+        map.fitBounds(bounds, {
+          padding: [70, 70],
+          maxZoom: interactiveMode === "overview" ? 8 : 13,
+        });
+      }
+      // Otherwise: same case(s), same stage — this effect re-ran only
+      // because of an unrelated prop/reference change, so leave the
+      // camera exactly where the user left it (don't fight manual zoom).
     }
+
+    return () => {
+      if (pulseTimeoutRef.current !== null) {
+        window.clearTimeout(pulseTimeoutRef.current);
+        pulseTimeoutRef.current = null;
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapReady, interactiveMode, cases, caseData, stage]);
 
